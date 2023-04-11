@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, Flask
 from flask_sqlalchemy import SQLAlchemy
-
+from sqlalchemy import create_engine, text
 # 定义蓝图flask_sqlalchemy
 api = Blueprint("api", __name__)
 
@@ -29,11 +29,32 @@ def index2():
     return jsonify(users_list)
 
 
+@api.route('/user2',endpoint='ttt')
+def index2():
+    # 查询所有用户
+    engine = create_engine('mysql+pymysql://root:example@localhost/mydatabase')
+    conn = engine.connect()
+
+    # 执行查询并获取所有结果
+    result = conn.execute(text('''SELECT * FROM user'''))
+    column_name=tuple(result.keys())
+    users_list=[dict(zip(column_name,tuple(i))) for i in result]
+        # 将结果返回为JSON格式
+    return jsonify(users_list)
+
+
+@api.route('/init')
+def init_db():
+    # 查询所有用户
+    db.create_all()
+    return '数据库初始化成功'
+
+
 # 在应用程序中注册蓝图
 app = Flask(__name__)
 app.register_blueprint(api, url_prefix="/api")
 # 设置数据库连接信息
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:example@db/mydatabase'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:example@localhost/mydatabase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # 初始化SQLAlchemy
